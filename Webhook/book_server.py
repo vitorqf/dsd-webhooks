@@ -3,6 +3,39 @@ import json
 
 class BookServerHandler(BaseHTTPRequestHandler):
     books = []  # Lista para armazenar os livros
+    
+
+    def remove_book(self, data):
+        book_title = data.get('title')
+        if not book_title:
+            self.send_response(400)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            response = {"status": "error", "message": "Título do livro não fornecido"}
+            self.wfile.write(json.dumps(response).encode('utf-8'))
+            print("Erro: Título do livro não fornecido")
+            return
+
+        for book in self.books:
+            if book['title'] == book_title:
+                self.books.remove(book)
+                print(f"Livro removido: {book_title}")
+                
+                # Enviando resposta de sucesso
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                response = {"status": "success", "message": "Livro removido com sucesso"}
+                self.wfile.write(json.dumps(response).encode('utf-8'))
+                return
+
+        # Se o livro não foi encontrado
+        self.send_response(404)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        response = {"status": "error", "message": "Livro não encontrado"}
+        self.wfile.write(json.dumps(response).encode('utf-8'))
+        print("Erro: Livro não encontrado")
 
     def do_POST(self):
         print("Recebendo solicitação para adicionar livro...")
